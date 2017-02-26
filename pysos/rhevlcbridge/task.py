@@ -1,9 +1,11 @@
-class Task():
+# -*- coding: utf-8 -*-
 
-    uuid = ""
-    action_type = ""
-    status = ""
-    command_id = ""
+class Task:
+
+    __uuid = ""
+    __action_type = ""
+    __status = ""
+    __command_id = ""
 
     schema31 = {
         "uuid": 0,
@@ -24,6 +26,12 @@ class Task():
         "command_id": 7,
     }
     schema34 = {
+        "uuid": 0,
+        "action_type": 1,
+        "status": 2,
+        "command_id": 7,
+    }
+    schema36 = {
         "uuid": 0,
         "action_type": 1,
         "status": 2,
@@ -342,7 +350,7 @@ class Task():
         "2152": "RemoveRngDevice",
         "2100": "RemoveAuditLogById",
         "2101": "ClearAllDismissedAuditLogs",
-        "3000":	"SetDataOnSession",
+        "3000": "SetDataOnSession",
     }
 
     def __init__(self, csvList, dbVersion):
@@ -358,22 +366,43 @@ class Task():
             current_schema = self.schema33
         elif dbVersion == "3.4":
             current_schema = self.schema34
+        elif dbVersion == "3.6":
+            current_schema = self.schema36
 
         if len(details) > 2:
             self.uuid = details[current_schema['uuid']]
             self.command_id = details[current_schema['command_id']]
             self.action_type = self.codes[details[current_schema['action_type']]]
-            tempstatus = details[current_schema['status']]
-            self.status = self.statuses[tempstatus]
+            self.status = self.statuses[details[current_schema['status']]]
 
-    def get_action_type(self):
-        return self.action_type
+    @property
+    def action_type(self):
+        return self.__action_type
 
-    def get_uuid(self):
-        return self.uuid
+    @action_type.setter
+    def action_type(self, value):
+        self.__action_type = value
 
-    def get_status(self):
-        return self.status
+    @property
+    def uuid(self):
+        return self.__uuid
 
-    def get_command_id(self):
-        return self.command_id
+    @uuid.setter
+    def uuid(self, value):
+        self.__uuid = value
+
+    @property
+    def status(self):
+        return self.__status
+
+    @status.setter
+    def status(self, value):
+        self.__status = value
+
+    @property
+    def command_id(self):
+        return self.__command_id
+
+    @command_id.setter
+    def command_id(self, value):
+        self.__command_id = value

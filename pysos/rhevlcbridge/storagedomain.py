@@ -1,18 +1,20 @@
-'''
+# -*- coding: utf-8 -*-
+"""
 Created on Dec 27, 2013
 
 @author: wallace
-'''
+"""
 
-class StorageDomain():
-    '''
+
+class StorageDomain:
+    """
     This class will represent hosts in an environment
-    '''
+    """
 
-    uuid = ""
-    name = ""
-    storage_type = ""
-    master = False
+    __uuid = ""
+    __name = ""
+    __storage_type = ""
+    __master = False
 
     schema31 = {
         "uuid": 0,
@@ -44,11 +46,20 @@ class StorageDomain():
         "storage_type": 4,
         "master": 3,
     }
+    schema36 = {
+        "uuid": 0,
+        "name": 2,
+        "storage_type": 4,
+        "master": 3,
+    }
 
     def __init__(self, csvList, dbVersion):
-        '''
+        """
         This constructor assumes it is being passed a comma separated list consisting of all elements in a line from the dat file
-        '''
+
+        :param csvList:
+        :param dbVersion:
+        """
         details = csvList
 
         current_schema = "3.3"   # arbitrary, just to set a default
@@ -62,11 +73,12 @@ class StorageDomain():
             current_schema = self.schema34
         elif dbVersion == "3.5":
             current_schema = self.schema35
+        elif dbVersion == "3.6":
+            current_schema = self.schema36
 
         if len(details) > 2:
             self.uuid = details[current_schema['uuid']]
             self.name = details[current_schema['name']]
-            #print self.name
             # determine storage medium
             self.storage_type = details[current_schema['storage_type']]
             if self.storage_type == "0":
@@ -77,58 +89,40 @@ class StorageDomain():
                 self.storage_type = "FCP"
             elif self.storage_type == "3":
                 self.storage_type = "iSCSI"
+            elif self.storage_type == "7":
+                self.storage_type = "Gluster"
             self.master = False
             if details[current_schema['master']] == "0":
                 self.master = True
 
-    def get_uuid(self):
-        return self.uuid
+    @property
+    def uuid(self):
+        return self.__uuid
 
+    @property
+    def name(self):
+        return self.__name
 
-    def get_name(self):
-        return self.name
+    @property
+    def storage_type(self):
+        return self.__storage_type
 
+    @property
+    def master(self):
+        return self.__master
 
-    def get_storage_type(self):
-        return self.storage_type
-
-    def get_master(self):
-        return self.master
-
-
-    def set_uuid(self, value):
+    @uuid.setter
+    def uuid(self, value):
         self.__uuid = value
 
-
-    def set_name(self, value):
+    @name.setter
+    def name(self, value):
         self.__name = value
 
-
-    def set_storage_type(self, value):
+    @storage_type.setter
+    def storage_type(self, value):
         self.__storage_type = value
 
-
-    def set_master(self, value):
+    @master.setter
+    def master(self, value):
         self.__master = value
-
-
-    def del_uuid(self):
-        del self.__uuid
-
-
-    def del_name(self):
-        del self.__name
-
-
-    def del_storage_type(self):
-        del self.__storage_type
-
-
-    def del_master(self):
-        del self.__master
-
-    uuid = property(get_uuid, set_uuid, del_uuid, "uuid's docstring")
-    name = property(get_name, set_name, del_name, "name's docstring")
-    storage_type = property(get_storage_type, set_storage_type, del_storage_type, "storage_type's docstring")
-    master = property(get_master, set_master, del_master, "master's docstring")
-

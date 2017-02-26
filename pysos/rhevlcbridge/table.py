@@ -1,8 +1,9 @@
-'''
+# -*- coding: utf-8 -*-
+"""
 Created on Jan 3, 2014
 
 @author: wallace
-'''
+"""
 
 
 # Define colors - yay color!
@@ -65,25 +66,25 @@ class Table(object):
         colWidths = []
         for c in self.tableCols:
             # print "Finding largest width for: " + c
-            methName = "get_" + c
-            #print methName
+            methName = c
+            # print methName
             tempRange = []
             for e in self.tableEnts:
-                #print e.get_name()
+                # print e.get_name()
                 # cycle through entities in a given column to find widest string under 36 chars
                 widthFunc = getattr(e, methName)
                 # Have to validate this in case the value returned is a boolean
-                tempVal = widthFunc()
+                tempVal = widthFunc
                 if "bool" in str(type(tempVal)):
                     newWidth = 1
                 else:
-                    newWidth = len(widthFunc())
-                #print "Appending " + str(newWidth) + " to range of widths."
+                    newWidth = len(widthFunc)
+                # print "Appending " + str(newWidth) + " to range of widths."
                 tempRange.append(newWidth)
             maxWidth = max(tempRange)
-            #print "Found " + str(maxWidth) + " to be the largest width."
+            # print "Found " + str(maxWidth) + " to be the largest width."
             if maxWidth <= len(c):
-                #print "maxWidth was not larger than the column header, setting length to column header"
+                # print "maxWidth was not larger than the column header, setting length to column header"
                 maxWidth = len(c)
             colWidths.append(maxWidth)
 
@@ -124,10 +125,10 @@ class Table(object):
             entStr = ""
             index = 0
             for c in self.tableCols:
-                methName = "get_" + c
+                methName = c
                 #print methName
                 colFunc = getattr(e, methName)
-                newVal = colFunc()
+                newVal = colFunc
                 if "bool" in str(type(newVal)):
                     if newVal:
                         newVal = "*"
@@ -137,7 +138,7 @@ class Table(object):
                         #linecolor = colors.CYAN
                 dataStr = dataStr + "\"" + newVal + "\","
                 dataFmtStr = dataFmtStr + "{:^" + str(colWidths[index]) + "}\t"
-                index = index + 1
+                index += 1
 
             entStr = "\"" + dataFmtStr.rstrip("\t") + "\".format(" + dataStr.rstrip(",") + ")"
             print("\t" + linecolor + eval(entStr) + colors.ENDC)
