@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 import sys
 import os
 import pysosutils
@@ -24,7 +24,7 @@ class YUM:
     def getLastUpdate(self):
         """ Get the last package updated """
         if os.path.isfile(os.path.join(self.target, 'var/log/yum.log')):
-            with open(self.target + 'var/log/yum.log', 'rb') as yfile:
+            with open(os.path.join(self.target, 'var/log/yum.log'), 'rb') as yfile:
                 try:
                     yfile.seek(-256, os.SEEK_END)
                     return yfile.readlines()[-1].decode()
@@ -45,10 +45,9 @@ class YUM:
     def getRepoList(self):
         """ Compile a list of all repos the system is using """
         if os.path.isfile(
-                    self.target + 'sos_commands/yum/yum_-C_repolist'):
+                    os.path.join(self.target, 'sos_commands/yum/yum_-C_repolist')):
             yumInfo = []
-            with open(self.target + 'sos_commands/yum/yum_-C_repolist'\
-                        , 'r') as yfile:
+            with open(os.path.join(self.target, 'sos_commands/yum/yum_-C_repolist'), 'r') as yfile:
                 for line in yfile:
                     if line.startswith('Loaded plugins:'):
                         self.plugins = line.split(':')[1].strip('\n')
@@ -67,18 +66,17 @@ class YUM:
 
     def getSubMgrInst(self):
         """ Get subscription information from subscription manager """
-        if os.path.isfile(self.target + 'sos_commands/general/subscription-manager_list_--installed'):
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/general/subscription-manager_list_--installed')):
             prodToParse = []
             prodInfo = []
-            with open(self.target + 'sos_commands/general/subscription-manager_list_--installed', 'r') as sfile:
+            with open(os.path.join(self.target, 'sos_commands/general/subscription-manager_list_--installed'), 'r') as sfile:
                 for line in sfile:
                     if line.startswith('Product Name:'):
                         prod = Object()
                         prod.header = line.strip('\n')
                         prodToParse.append(prod)
             for prod in prodToParse:
-                prod.data = pysosutils.parseOutputSection(self.target +
-                                                          'sos_commands/general/subscription-manager_list_--installed',
+                prod.data = pysosutils.parseOutputSection(os.path.join(self.target, 'sos_commands/general/subscription-manager_list_--installed'),
                                                           prod.header)
                 for k in prod.data:
                     setattr(prod, str(k).lower().strip().replace(' ', ''), prod.data[k])

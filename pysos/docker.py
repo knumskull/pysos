@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 import sys
 from . import pysosutils
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object:
@@ -39,8 +40,7 @@ class docker:
     def getImageList(self):
         try:
             images = []
-            with open(self.target +
-                      'sos_commands/docker/docker_images') as d:
+            with open(os.path.join(self.target, 'sos_commands/docker/docker_images')) as d:
                 for line in d:
                     l = line.split()
                     i = Object()

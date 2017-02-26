@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 import os
-from .colors import Color as c
+from .color import Color as c
 
 
 class VolumeGroup:
@@ -88,13 +89,13 @@ class lvm:
 
     def __init__(self, target):
         if os.path.isfile(
-                target + 'sos_commands/devicemapper/vgdisplay_-vv'
+                os.path.join(target, 'sos_commands/devicemapper/vgdisplay_-vv')
                 ):
-            self.target = target + 'sos_commands/devicemapper/vgdisplay_-vv'
+            self.target = os.path.join(target, 'sos_commands/devicemapper/vgdisplay_-vv')
         elif os.path.isfile(
-                target + 'sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0'
+                os.path.join(target, 'sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0')
                 ):
-                self.target = target + 'sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0'
+                self.target = os.path.join(target, 'sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0')
         self.pprint = c()
 
     def getLvmInfo(self):
@@ -114,6 +115,12 @@ class lvm:
             self.pprint.bred(
                 '\tCould not find %s. Unable to parse' % self.target
             )
+        except AttributeError:
+            vgs = False
+            self.pprint.bred(
+                '\tLVM Information Not Found.'
+            )
+
         return vgs
 
     def displayVgInfo(self):

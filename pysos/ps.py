@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -22,12 +23,11 @@ class procInfo:
         as list vaues
         """
         if os.path.isfile(
-                self.target + 'sos_commands/process/ps_auxwww'):
+                os.path.join(self.target, 'sos_commands/process/ps_auxwww')):
             psInfo = []
             stats = ['user', 'pid', 'cpu', 'mem', 'vsz', 'rss',
                      'tty', 'stat', 'start', 'time']
-            with open(self.target +
-                      'sos_commands/process/ps_auxwww', 'r') as psfile:
+            with open(os.path.join(self.target, 'sos_commands/process/ps_auxwww'), 'r') as psfile:
                 next(psfile)
                 for line in psfile:
                     proc = Object()

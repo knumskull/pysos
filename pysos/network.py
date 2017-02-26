@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 from . import pysosutils
 import math
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -36,7 +37,7 @@ class network():
     def getIntList(self, devFilter=False):
         """ Get list of interfaces """
         devList = []
-        with open(self.target + 'proc/net/dev', 'r') as dfile:
+        with open(os.path.join(self.target, 'proc/net/dev'), 'r') as dfile:
             lines = dfile.readlines()
             # the 'Iter-' and '-face' lines from head of proc/net/dev
             # will get captured by this. Delete them from the list
@@ -96,21 +97,16 @@ class network():
     def getMacAddr(self, device):
         """ Get the MAC address for an interface """
         # first try the ifcfg-* file
-        if os.path.isfile(self.target +
-                          'etc/sysconfig/network-scripts/ifcfg-' + device):
-            with open(self.target +
-                      'etc/sysconfig/network-scripts/ifcfg-' + device,
-                      'r') as ifile:
+        if os.path.isfile(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}').format(device)):
+            with open(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(device)), 'r') as ifile:
                 for line in ifile.readlines():
                     if line.startswith('HWADDR'):
                         return line[line.find('=') + 1:len(line)].replace(
                             '"', '').replace("'", '').strip('\n')
         # then default to ifconfig output file
         # though this will cause duplicate MACs with most bond modes
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ifconfig_-a'):
-            with open(self.target +
-                      'sos_commands/networking/ifconfig_-a',
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ifconfig_-a')):
+            with open(os.path.join(self.target, 'sos_commands/networking/ifconfig_-a'),
                       'r') as ifile:
                 for line in ifile:
                     if line[0].isalpha():
@@ -123,20 +119,15 @@ class network():
     def getIpAddr(self, device):
         """ Get the IP address for an interface """
         # first try the ifcfg-* file
-        if os.path.isfile(self.target +
-                          'etc/sysconfig/network-scripts/ifcfg-' + device):
-            with open(self.target +
-                      'etc/sysconfig/network-scripts/ifcfg-' + device,
-                      'r') as ifile:
+        if os.path.isfile(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(device))):
+            with open(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(device)), 'r') as ifile:
                 for line in ifile.readlines():
                     if line.startswith('IPADDR='):
                         return line[line.find('=') + 1:len(line)].replace(
                             '"', '').replace("'", '').strip('\n')
         # if that fails, go to ifconfig -a
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ifconfig_-a'):
-            devInfo = pysosutils.parseOutputSection(self.target +
-                                                    'sos_commands/networking/ifconfig_-a',
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ifconfig_-a')):
+            devInfo = pysosutils.parseOutputSection(os.path.join(self.target, 'sos_commands/networking/ifconfig_-a'),
                                                     device
                                                     )
             try:
@@ -145,10 +136,8 @@ class network():
             except:
                 return ' '
         # if that fails try ip_address which may or may not be present
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ip_address'):
-            with open(self.target +
-                      'sos_commands/networking/ip_address', 'r') as ifile:
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ip_address')):
+            with open(os.path.join(self.target, 'sos_commands/networking/ip_address'), 'r') as ifile:
                 for n, line in enumerate(ifile):
                     if device in line:
                         for i in range(3):
@@ -162,15 +151,12 @@ class network():
     def getIfcfgInfo(self, dev):
         """ Get the ifcfg-file config settings for an interface """
         if not isinstance(dev, Object):
-            name = device
+            name = dev
             dev = Object()
             dev.name = name
 
-        if os.path.isfile(self.target +
-                          'etc/sysconfig/network-scripts/ifcfg-' + dev.name):
-            with open(self.target +
-                      'etc/sysconfig/network-scripts/ifcfg-' + dev.name,
-                      'r') as ifile:
+        if os.path.isfile(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(dev.name))):
+            with open(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(dev.name)), 'r') as ifile:
                 for line in ifile.readlines():
                     if line.startswith('MASTER'):
                         dev.master = line[line.find('=') + 1:
@@ -200,12 +186,12 @@ class network():
 
     def getNetDevInfo(self, device):
         """ Get interface stats from /proc/net/dev """
-        if os.path.isfile(self.target + 'proc/net/dev'):
+        if os.path.isfile(os.path.join(self.target, 'proc/net/dev')):
             stats = ['rxbytes', 'rxpkts', 'rxerrs', 'rxdrop', 'rxfifo',
                      'rxframe', 'rxcomprsd', 'rxmulti', 'txbytes', 'txpkts',
                      'txerrs', 'txdrop', 'txfifo', 'txcolls', 'txcarrier',
                      'txcomprsd']
-            with open(self.target + 'proc/net/dev', 'r') as nfile:
+            with open(os.path.join(self.target, 'proc/net/dev'), 'r') as nfile:
                 for line in nfile.readlines():
                     if line.split(':')[0].strip() == device:
                         dev = Object()
@@ -240,11 +226,8 @@ class network():
         bondInfo = []
         for bond in bonds:
             dev = self.getBondIntInfo(bond)
-            if os.path.isfile(self.target +
-                              'etc/sysconfig/network-scripts/ifcfg-' + bond):
-                with open(self.target +
-                          'etc/sysconfig/network-scripts/ifcfg-'
-                          + bond, 'r') as bfile:
+            if os.path.isfile(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(bond))):
+                with open(os.path.join(self.target, 'etc/sysconfig/network-scripts/ifcfg-{}'.format(bond)), 'r') as bfile:
                     for line in bfile.readlines():
                         if line.startswith('BONDING_OPTS'):
                             dev.bondingopts = line[line.find('=') + 1:
@@ -261,8 +244,8 @@ class network():
         bond.slaves = []
         bond.failures = []
         bond.macaddrs = []
-        if os.path.isfile(self.target + 'proc/net/bonding/' + bond.name):
-            with open(self.target + 'proc/net/bonding/' + bond.name,
+        if os.path.isfile(os.path.join(self.target, 'proc/net/bonding/{}'.format(bond.name))):
+            with open(os.path.join(self.target, 'proc/net/bonding/{}'.format(bond.name)),
                       'r') as bfile:
                 for line in bfile.readlines():
                     if line.startswith('Bonding Mode:'):
@@ -299,11 +282,9 @@ class network():
         if not device:
             device = Object()
             device.name = devName
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ethtool_' + device.name):
-            devSettings = pysosutils.parseOutputSection(self.target +
-                                                        'sos_commands/networking/ethtool_' +
-                                                        device.name,
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ethtool_{}'.format(device.name))):
+            devSettings = pysosutils.parseOutputSection(os.path.join(self.target,
+                                                                     'sos_commands/networking/ethtool_{}'.format(device.name)),
                                                         'Settings')
         else:
             return device
@@ -330,10 +311,8 @@ class network():
 
     def getIntDriverInfo(self, device):
         """ Get driver information for an interface """
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ethtool_-i_' + device.name):
-            with open(self.target +
-                      'sos_commands/networking/ethtool_-i_' + device.name,
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ethtool_-i_{}'.format(device.name))):
+            with open(os.path.join(self.target, 'sos_commands/networking/ethtool_-i_{}'.format(device.name)),
                       'r') as efile:
                 for line in efile:
                     if line.startswith('driver'):
@@ -354,19 +333,15 @@ class network():
 
     def getRingInfo(self, device):
         """ Get ring information for an interface """
-        if os.path.isfile(self.target +
-                          'sos_commands/networking/ethtool_-g_' + device.name):
+        if os.path.isfile(os.path.join(self.target, 'sos_commands/networking/ethtool_-g_{}'.format(device.name))):
             if 'bond' in device.name or 'vnet' in device.name:
                 for item in ['maxrx', 'maxtx', 'currentrx',
                              'currenttx']:
                     setattr(device, item, '?')
                 return device
-            with open(self.target +
-                      'sos_commands/networking/ethtool_-g_' + device.name,
-                      'r') as rfile:
+            with open(os.path.join(self.target, 'sos_commands/networking/ethtool_-g_{}'.format(device.name)), 'r') as rfile:
                 if 'Operation not supported' in rfile.readline():
-                    for item in ['maxrx', 'maxtx', 'currentrx',
-                                 'currenttx']:
+                    for item in ['maxrx', 'maxtx', 'currentrx', 'currenttx']:
                         setattr(device, item, '?')
                     return device
                 # easiest way to parse this is by line number

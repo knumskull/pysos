@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 import sys
 import datetime
 import textwrap
 import re
 from . import pysosutils
 import os
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -21,23 +22,20 @@ class opsys:
 
     def getHostName(self):
         """ Get the hostname of the system """
-        return pysosutils.fileToString(self.target +
-                                       'sos_commands/general/hostname')
+        return pysosutils.fileToString(os.path.join(self.target, 'sos_commands/general/hostname'))
 
     def getRunLevel(self):
         """ Get the _current_ runlevel """
-        return pysosutils.fileToString(self.target +
-                                       'sos_commands/startup/runlevel')
+        return pysosutils.fileToString(os.path.join(self.target, 'sos_commands/startup/runlevel'))
 
     def getSosDate(self):
         """ Get time of when sosreport was run """
-        return pysosutils.fileToString(self.target + 'date')
+        return pysosutils.fileToString(os.path.join(self.target, 'date'))
 
     def getUptime(self):
         """ Get and format system uptime into a readable string """
         uptime = ''
-        u = pysosutils.fileToString(self.target +
-                                    'sos_commands/general/uptime')
+        u = pysosutils.fileToString(os.path.join(self.target, 'sos_commands/general/uptime'))
         if 'not found' in u:
             return u
         upString = u[u.find('up') + 2:u.find('user') - 3].strip().strip(',')
@@ -56,13 +54,11 @@ class opsys:
 
     def getUname(self):
         """ Get contents of uname_-a """
-        return pysosutils.fileToString(self.target +
-                                       'sos_commands/kernel/uname_-a')
+        return pysosutils.fileToString(os.path.join(self.target, 'sos_commands/kernel/uname_-a'))
 
     def getLoadAvg(self):
         """ Get reported loadavg at time of sosreport """
-        uptime = pysosutils.fileToString(self.target +
-                                         'sos_commands/general/uptime')
+        uptime = pysosutils.fileToString(os.path.join(self.target, 'sos_commands/general/uptime'))
         index = uptime.find('e:')
         loads = uptime[index + 2:len(uptime)].split(',')
         return loads
@@ -90,7 +86,7 @@ class opsys:
     def getProcStat(self):
         """ Get boottime, number of processes and running procs """
         procStat = Object()
-        with open(self.target + 'proc/stat', 'r') as pfile:
+        with open(os.path.join(self.target,'proc/stat'), 'r') as pfile:
             for line in pfile:
                 if line.startswith('btime'):
                     btime = line.split()[1]
@@ -106,7 +102,7 @@ class opsys:
     def getCpuInfo(self, formatFlags=True):
         """ Get data from /proc/cpuinfo """
         cpuInfo = Object()
-        with open(self.target + 'proc/cpuinfo') as cfile:
+        with open(os.path.join(self.target, 'proc/cpuinfo')) as cfile:
             # we read in reverse since the cpu info output is the same
             # no need to iterate over dozens of the same template
             # we can extrapolate the data points that may change once we

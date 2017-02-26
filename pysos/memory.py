@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 import re
 import math
 from . import pysosutils
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -39,9 +40,9 @@ class memory:
 
     def getMemInfo(self):
         """ Get memory statistics from /proc/meminfo """
-        if os.path.isfile(self.target + 'proc/meminfo'):
+        if os.path.isfile(os.path.join(self.target, 'proc/meminfo')):
             mem = Object()
-            with open(self.target + 'proc/meminfo', 'r') as meminfo:
+            with open(os.path.join(self.target, 'proc/meminfo'), 'r') as meminfo:
                 for line in meminfo:
                     if 'MemTotal' in line:
                         mem.total = round(
@@ -107,8 +108,7 @@ class memory:
             setattr(oom, key[key.find('.') + 1:len(key)], ooms[key])
         for key in mems:
             setattr(mem, key[key.find('.') + 1:len(key)], mems[key])
-        mem.swappiness = pysosutils.getSysctl(self.target,
-                                              'swappiness')['vm.swappiness']
+        mem.swappiness = pysosutils.getSysctl(self.target, 'swappiness')['vm.swappiness']
         sysctls.oom = oom
         sysctls.mem = mem
         return sysctls

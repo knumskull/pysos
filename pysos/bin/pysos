@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 import argparse
+import tarfile
+import tempfile
+
 import os
 import sys
 import subprocess
 from pysos import bios, docker, filesys, kernel, lspci, lvm, memory, network, opsys, ps, pysosutils, virt, yum
-
+from pysosutils import dir_entries
 
 parser = argparse.ArgumentParser(description="Pysos is used to quickly parse and display information from a\
                 sosreport in a meaningful and human-readable manner")
@@ -134,17 +137,26 @@ def doStuff(**args):
         obj = ps.procInfo(target)
         obj.displayPsInfo()
     if args['yum']:
-        obj = yum.yum(target)
+        obj = yum.YUM(target)
         obj.displayAllYumInfo()
     # Need to figure out how to do this without needing target argument
     if args['update']:
-        print "Currently this is not functional."
-        print "If you need to update, clone the git repo and run",
-        print "'python setup.py install' again."
+        print("Currently this is not functional.")
+        print("If you need to update, clone the git repo and run",)
+        print("'python setup.py install' again.")
 
 if __name__ == '__main__':
     args = parser.parse_args()
     target = args.target[0]
-    if not target.endswith('/'):
-        target = target + '/'
-    doStuff(**vars(args))
+
+    if os.path.isfile(target):
+        with tempfile.TemporaryDirectory(prefix='pysos_') as td:
+            with tarfile.open(target) as f:
+                f.extractall(td)
+            target = os.path.dirname(dir_entries(td, True, 'version.txt')[0])
+            doStuff(**vars(args))
+    elif os.path.isdir(target):
+
+        if not target.endswith('/'):
+            target = target + '/'
+        doStuff(**vars(args))

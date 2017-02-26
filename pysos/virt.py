@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import sys
 from . import pysosutils
 import math
 from . import ps
-from .colors import Color as c
+from .color import Color as c
 from .rhevm import rhevm
 
 

@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 import textwrap
 from collections import OrderedDict
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -48,7 +49,7 @@ class filesys():
                         mounts.append(mount)
             return mounts
         else:
-            return False
+            return []
 
     def getFsSize(self, mount):
         """ Get filesystem size data for a given mount """

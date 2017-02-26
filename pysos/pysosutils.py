@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+import glob
 import sys
 import os
 import re
@@ -18,17 +20,17 @@ def fileToString(filepath):
 
 def getCmdLine(target):
     """ Get the booted kernel cmdline options """
-    return fileToString(target + 'proc/cmdline')
+    return fileToString(os.path.join(target, 'proc/cmdline'))
 
 
 def getRelease(target):
     """ Get the OS release """
-    return fileToString(target + 'etc/redhat-release')
+    return fileToString(os.path.join(target, 'etc/redhat-release'))
 
 
 def getKernelVersion(target):
     """ Get the booted kernel version """
-    uname = fileToString(target + 'sos_commands/kernel/uname_-a')
+    uname = fileToString(os.path.join(target, 'sos_commands/kernel/uname_-a'))
     return uname.split()[2]
 
 
@@ -39,8 +41,8 @@ def getRpm(target, rpm, boolean=False):
     Boolean option can be used to see if rpm is installed or not.
     """
     rpms = []
-    if os.path.isfile(target + 'installed-rpms'):
-        with open(target + 'installed-rpms', 'r') as rfile:
+    if os.path.isfile(os.path.join(target, 'installed-rpms')):
+        with open(os.path.join(target, 'installed-rpms'), 'r') as rfile:
             for line in rfile:
                 if line.startswith(rpm):
                     index = line.find('.')
@@ -80,8 +82,8 @@ def checkRpm(target, rpm):
 def getSysctl(target, sysctl):
     """ Get the setting for a given sysctl """
     sysctls = {}
-    if os.path.isfile(target + 'sos_commands/kernel/sysctl_-a'):
-        with open(target + 'sos_commands/kernel/sysctl_-a',
+    if os.path.isfile(os.path.join(target, 'sos_commands/kernel/sysctl_-a')):
+        with open(os.path.join(target, 'sos_commands/kernel/sysctl_-a'),
                   'r') as sysfile:
             for line in sysfile:
                 if sysctl in line:
@@ -99,8 +101,8 @@ def getChkConfig(target, service):
 
     TO DO: expand to systemd.
     """
-    if os.path.isfile(target + 'chkconfig'):
-        with open(target + 'chkconfig', 'r') as cfile:
+    if os.path.isfile(os.path.join(target, 'chkconfig')):
+        with open(os.path.join(target, 'chkconfig'), 'r') as cfile:
             for line in cfile:
                 if service in line:
                     serviceStatus = line.lstrip(service).rstrip(
@@ -114,8 +116,8 @@ def getChkConfig(target, service):
 def getSeLinux(target):
     """ Get the current and configured SELinux setting """
     selStatus = {}
-    if os.path.isfile(target + 'sos_commands/selinux/sestatus_-b'):
-        with open(target + 'sos_commands/selinux/sestatus_-b',
+    if os.path.isfile(os.path.join(target, 'sos_commands/selinux/sestatus_-b')):
+        with open(os.path.join(target, 'sos_commands/selinux/sestatus_-b'),
                   'r') as sfile:
             for i, line in enumerate(sfile):
                 index = line.find(':')
@@ -164,7 +166,7 @@ def getTaintCodes(target):
     t['1'] = "Proprietary module has been loaded"
     t['0'] = "Not tainted. Hooray!"
 
-    with open(target + 'proc/sys/kernel/tainted', 'r') as tfile:
+    with open(os.path.join(target, 'proc/sys/kernel/tainted'), 'r') as tfile:
         check = tfile.read().splitlines()
         check = check[0]
         # if check in t:
@@ -228,3 +230,42 @@ def parseOutputSection(fname, section):
             return False
     else:
         return False
+
+
+def dir_entries(dir_name, recursive=False, filter_exp=None, *extensions):
+    """
+    Return a list of file names found in directory 'dir_name'
+    If 'recursive' is True, subdirectories in 'dir_name' will be scanned recursively.
+    Found filters will be matched against the given filter_exp, e.g. '*motor*'.
+    Set 'filter_exp' to None if you want no filtering.
+    Additional arguments, if provided, are file extensions to be matched. Only files
+    matching the filter and extensions (if given) are added to the list.
+    If neither a filter nor extensions are provided, all files found in the directory
+    are returned.
+
+    Example usage: fileList = dir_entries(r'/tmp', False, None, '.txt', '.py')
+    Only files with '.txt' and '.py' extensions will be added to the list.
+    Example usage: fileList = dirEntries(r'/tmp', True)
+    All files (also those in the subdirectories of '/tmp/) will be added
+    to the list.
+    """
+    file_list = []
+    if os.access(dir_name, os.F_OK & os.R_OK):
+        if filter_exp:
+            filtered = glob.glob(os.path.join(dir_name, filter_exp))
+        else:
+            filtered = None
+        for entry in os.listdir(dir_name):
+            entry = os.path.join(dir_name, entry)
+            if os.path.isdir(entry):
+                if recursive:
+                    file_list.extend(dir_entries(entry, recursive, filter_exp, *extensions))
+            else:
+                if filter_exp:
+                    if not entry in filtered:
+                        continue
+                if extensions:
+                    if not os.path.splitext(entry)[1] in extensions:
+                        continue
+                file_list.append(entry)
+    return file_list

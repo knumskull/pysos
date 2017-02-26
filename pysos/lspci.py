@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):

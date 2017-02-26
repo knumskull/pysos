@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 import re
 from . import opsys
 from . import pysosutils
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -16,8 +17,8 @@ class bios:
 
     def __init__(self, target):
         self.target = target
-        if os.path.isfile(self.target + 'dmidecode'):
-            self.dmifile = self.target + 'dmidecode'
+        if os.path.isfile(os.path.join(self.target, 'dmidecode')):
+            self.dmifile = os.path.join(self.target, 'dmidecode')
         else:
             print('No dmidecode file present')
             return False
@@ -61,8 +62,7 @@ class bios:
 
         The results are then returned as a dictionary
         """
-        return pysosutils.parseOutputSection(self.target +
-                                            'sos_commands/hardware/dmidecode',
+        return pysosutils.parseOutputSection(os.path.join(self.target, 'sos_commands/hardware/dmidecode'),
                                             to_check
                                             )
 

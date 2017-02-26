@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 from . import pysosutils
@@ -5,7 +6,7 @@ from . import opsys
 from . import filesys
 from . import memory
 import math
-from .colors import Color as c
+from .color import Color as c
 
 
 class Object(object):
@@ -34,10 +35,8 @@ class kernel:
         if os.path.isfile(self.target + 'etc/kdump.conf'):
             with open(self.target + 'etc/kdump.conf', 'r') as kfile:
                 for line in kfile:
-                    if (not line.startswith("#") and not
-                            line.startswith('\n')):
-                        kdump[line.split()[0]] = (line.split(
-                            line.split()[0])[1].strip('\n'))
+                    if not line.startswith("#") and not line.startswith('\n'):
+                        kdump[line.split()[0]] = (line.split(line.split()[0])[1].strip('\n'))
         else:
             kdump = False
         return kdump
@@ -60,16 +59,14 @@ class kernel:
             for mount in mounts:
                 try:
                     if mount.mountpoint == crashInfo.path.strip():
-                        crashInfo.pathfreespace = fs.getFsSize(
-                            mount.mountpoint).avail / 1048576
+                        crashInfo.pathfreespace = fs.getFsSize(mount.mountpoint).avail / 1048576
                         crashInfo.pathdevice = mount.dev
                 except:
                     pass
             # Hit this if no explicit mount point for crashpath.
             # Assume root fs.
             if not hasattr(crashInfo, 'pathfreespace'):
-                crashInfo.pathfreespace = int(fs.getFsSize('/').avail
-                                              ) / 1048576
+                crashInfo.pathfreespace = int(fs.getFsSize('/').avail) / 1048576
                 crashInfo.pathdevice = fs.getFsDev('/')
         else:
             crashInfo.path = 'No kdump.conf file found'
@@ -110,44 +107,26 @@ class kernel:
                 print('\t\t\t       ' + item)
         self.pprint.bheader('\t kexec-tools version :  ', kdumpVer)
         self.pprint.bheader('\t Service enablement  :  ', kdumpState)
-        self.pprint.bheader('\t Memory Reservation  :  ',
-                            crashInfo.memreserve
-                            )
+        self.pprint.bheader('\t Memory Reservation  :  ', crashInfo.memreserve)
 
         print('')
         self.pprint.bheader('\t kdump.conf          : ')
         if kdump:
             for key in kdump:
                 print('\t\t\t\t%s  %s' % (key, kdump[key]))
-            self.pprint.bblue('\t\t Crash Path   : ',
-                              crashInfo.path,
-                              '  ({})'.format(
-                                  crashInfo.pathdevice
-                              )
-                              )
-            self.pprint.bblue('\t\t Space Needed : ',
-                              '{:>6.2f} GB'.format(
-                                  math.ceil(float(
-                                      crashInfo.memrequired
-                                  ) / 1000
-                                  )
-                              )
-                              )
+            self.pprint.bblue('\t\t Crash Path   : ', crashInfo.path, '  ({})'.format(crashInfo.pathdevice))
+            self.pprint.bblue('\t\t Space Needed : ', '{:>6.2f} GB'.format(math.ceil(float(crashInfo.memrequired) / 1000)))
 
         else:
             self.pprint.bred('\t\t\t\t Unable to parse config')
 
         if type(crashInfo.pathfreespace) is int:
-            self.pprint.bblue('\t\t Free Space   : ',
-                              '{:>6.2f} GB'.format(
-                                  crashInfo.pathfreespace
-                              )
-                              )
+            self.pprint.bblue('\t\t Free Space   : ', '{:>6.2f} GB'.format(crashInfo.pathfreespace))
+            if crashInfo.memrequired / 1000 > crashInfo.pathfreespace:
+                self.pprint.warn('\t\t\t\t NOT ENOUGH SPACE FOR VMCORE DUMP')
         else:
             self.pprint.bblue('\t\t Free Space   : ', 'Unknown')
 
-        if crashInfo.memrequired / 1000 > crashInfo.pathfreespace:
-            self.pprint.warn('\t\t\t\t NOT ENOUGH SPACE FOR VMCORE DUMP')
         print('')
 
         self.pprint.bheader('\t Kernel Panic Sysctl : ')

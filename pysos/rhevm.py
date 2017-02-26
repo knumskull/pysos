@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 import sys
 from . import pysosutils
 import os
-from .colors import Color as c
+from .color import Color as c
 from .rhevlcbridge import Database, Cluster, Table, Host, StorageDomain
 
 
