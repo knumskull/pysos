@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 class Color:
 
     def __init__(self):
