@@ -150,11 +150,14 @@ if __name__ == '__main__':
     target = args.target[0]
 
     if os.path.isfile(target):
-        with tempfile.TemporaryDirectory(prefix='pysos_') as td:
-            with tarfile.open(target) as f:
-                f.extractall(td)
-            target = os.path.dirname(dir_entries(td, True, 'version.txt')[0])
-            doStuff(**vars(args))
+        if sys.version_info >= (3, 2):
+            with tempfile.TemporaryDirectory(prefix='pysos_') as td:
+                with tarfile.open(target) as f:
+                    f.extractall(td)
+                target = os.path.dirname(dir_entries(td, True, 'version.txt')[0])
+                doStuff(**vars(args))
+        else:
+            print("Using pysos directly with sosreport-archive, you need at least Python 3.2!")
     elif os.path.isdir(target):
 
         if not target.endswith('/'):
